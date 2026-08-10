@@ -7,7 +7,7 @@ import DiagnosisPicker from './components/DiagnosisPicker';
 const todayISO = () => new Date().toISOString().slice(0, 10);
 
 const initialForm = {
-  surname: '', name: '', patronymic: '', birthDate: '', ageYears: '', ageMonths: '', sex: '', document: '', address: '', scene: '', diagnosis: '', circumstances: '', callDate: todayISO(), callTime: '', help: '', bloodPressure: '', temperature: '', glucose: '', lams: '', hospital: '', deliveryTime: '', transport: '', stationDoctor: '', team: '', brigadeDoctor: '', notes: '',
+  surname: '', name: '', patronymic: '', birthDate: '', ageYears: '', ageMonths: '', sex: '', document: '', address: '', scene: '', diagnosis: '', circumstances: '', callDate: todayISO(), callTime: '', help: '', bloodPressure: '', temperature: '', glucose: '', lams: '', hospital: '', deliveryDate: todayISO(), deliveryTime: '', transport: '', stationDoctor: '', team: '', brigadeDoctor: '', notes: '',
 };
 
 function Field({ label, name, value, onChange, type = 'text', placeholder = '', wide = false, readOnly = false }) {
@@ -25,7 +25,7 @@ function calculateAge(birthDate) {
   const today = new Date();
   let years = today.getFullYear() - year;
   let months = today.getMonth() + 1 - month;
-  let days = today.getDate() - day;
+  const days = today.getDate() - day;
 
   if (days < 0) months -= 1;
   if (months < 0) {
@@ -45,7 +45,7 @@ export default function App() {
     const age = calculateAge(value);
     setForm((prev) => ({ ...prev, birthDate: value, ageYears: age.years === '' ? '' : String(age.years), ageMonths: age.months === '' ? '' : String(age.months) }));
   };
-  const reset = () => setForm({ ...initialForm, callDate: todayISO() });
+  const reset = () => setForm({ ...initialForm, callDate: todayISO(), deliveryDate: todayISO() });
 
   return <div className="app-shell">
     <div className="screen-ui">
@@ -66,7 +66,7 @@ export default function App() {
           {hasStroke && <div className="notice">Обнаружены признаки инсульта/ОНМК — перед печатью проверьте LAMS и глюкозу.</div>}
           <div className="grid two"><DiagnosisPicker value={form.diagnosis} onChange={update}/><TextField label="Обстоятельства заболевания / несчастного случая" name="circumstances" value={form.circumstances} onChange={update} rows={4}/><TextField label="Оказанная медицинская помощь" name="help" value={form.help} onChange={update} rows={5}/><Field label="Дата принятия вызова" name="callDate" value={form.callDate} onChange={update} type="date"/><Field label="Время принятия вызова" name="callTime" value={form.callTime} onChange={update} type="time"/></div>
         </section>
-        <section className="card"><div className="section-head"><span className="number">3</span><div><h2>Доставка и передача</h2><p>Сведения о стационаре, транспортировке и бригаде.</p></div></div><div className="grid two"><Field label="Стационар / медицинская организация" name="hospital" value={form.hospital} onChange={update}/><Field label="Время доставки" name="deliveryTime" value={form.deliveryTime} onChange={update} type="time"/><Field label="Способ транспортировки" name="transport" value={form.transport} onChange={update}/><Field label="Врач / фельдшер бригады" name="brigadeDoctor" value={form.brigadeDoctor} onChange={update}/><Field label="Фельдшер / врач принимающего отделения" name="stationDoctor" value={form.stationDoctor} onChange={update}/><Field label="Состав бригады" name="team" value={form.team} onChange={update}/></div><TextField label="Примечания" name="notes" value={form.notes} onChange={update} rows={4}/></section>
+        <section className="card"><div className="section-head"><span className="number">3</span><div><h2>Доставка и передача</h2><p>Сведения о стационаре, транспортировке и бригаде.</p></div></div><div className="grid two"><Field label="Стационар / медицинская организация" name="hospital" value={form.hospital} onChange={update}/><Field label="Дата доставки" name="deliveryDate" value={form.deliveryDate} onChange={update} type="date"/><Field label="Время доставки" name="deliveryTime" value={form.deliveryTime} onChange={update} type="time"/><Field label="Способ транспортировки" name="transport" value={form.transport} onChange={update}/><Field label="Врач / фельдшер бригады" name="brigadeDoctor" value={form.brigadeDoctor} onChange={update}/><Field label="Фельдшер / врач принимающего отделения" name="stationDoctor" value={form.stationDoctor} onChange={update}/><Field label="Состав бригады" name="team" value={form.team} onChange={update}/></div><TextField label="Примечания" name="notes" value={form.notes} onChange={update} rows={4}/></section>
         <section className="next-step"><strong>Печать</strong><span>Кнопка «Печать» формирует две страницы А4: лицевая сторона с I и II экземплярами и оборотная сторона с пунктами 14–22.</span></section>
       </main>
     </div>
