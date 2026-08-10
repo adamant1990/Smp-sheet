@@ -3,6 +3,18 @@ import React from 'react';
 const Line = ({ children = '' }) => <div className="print-line">{children}</div>;
 const value = (text, fallback = '________________') => text || fallback;
 
+function formatCallDate(date) {
+  if (!date) return '____.__.____';
+  const [year, month, day] = date.split('-');
+  return `${day}.${month}.${year}`;
+}
+
+function formatCallTime(time) {
+  if (!time) return { hour: '____', minute: '____' };
+  const [hour, minute] = time.split(':');
+  return { hour: hour || '____', minute: minute || '____' };
+}
+
 function Header({ copy }) {
   return <>
     <div className="print-org">
@@ -40,10 +52,11 @@ function Vitals({ form }) {
 }
 
 function FirstCopy({ form }) {
+  const callTime = formatCallTime(form.callTime);
   return <section className="front-copy">
     <Header copy="I" /><Vitals form={form} /><Patient form={form} />
     <div className="print-block diagnosis-block"><b>9. Диагноз врача (фельдшера) бригады скорой медицинской помощи</b><div className="print-writing diagnosis-lines">{form.diagnosis}</div><div className="direction">Направление врача поликлиники, др. мед. организации (нужное подчеркнуть)</div></div>
-    <div className="print-block compact"><b>10. Доставлен в л/п стационара № ГБ № 1</b> {form.hospital || '________________'}<br/>«{form.deliveryTime || '____'}» час «____» мин. «____» 20___ г.</div>
+    <div className="print-block compact"><b>10. Доставлен в л/п стационара № ГБ № 1</b> {form.hospital || '________________'}<br/>По вызову, принятому в «{callTime.hour}» час «{callTime.minute}» мин. «{formatCallDate(form.callDate)}»<br/>«{form.deliveryTime || '____'}» час «____» мин. «____» 20___ г.</div>
     <div className="print-block signature-row"><b>11. Врач (фельдшер)</b> {form.brigadeDoctor || '________________________'} <span>________________ (подпись)</span> <span>________________ (ф. и. о.)</span></div>
   </section>;
 }
