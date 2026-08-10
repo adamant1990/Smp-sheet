@@ -13,8 +13,11 @@
   .diagnosis-lines{min-height:17mm}
   .help-lines{min-height:16mm}
   .direction,.time-line{font-size:5.15pt}
-  .back-page{gap:3.5mm}
-  .back-notes{padding:0 0 0 2.7mm;margin-top:105mm;height:101mm;align-self:start;display:block;overflow:hidden}
+
+  /* Оборотная сторона: обе половины начинаются от верхнего края листа.
+     Не смещаем блок «В случае необходимости…» на 105 мм вниз. */
+  .back-page{gap:3.5mm;align-items:start}
+  .back-notes{padding:0 0 0 2.7mm;margin-top:0;height:auto;align-self:start;display:block;overflow:visible}
   .back-item{margin-top:.8mm}
   .item-14 .back-lines{min-height:25mm}
   .item-15 .back-lines{min-height:14mm}
