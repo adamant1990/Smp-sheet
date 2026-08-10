@@ -3,13 +3,13 @@ import React from 'react';
 const Line = ({ children = '' }) => <div className="print-line">{children}</div>;
 const value = (text, fallback = '________________') => text || fallback;
 
-function formatCallDate(date) {
+function formatDate(date) {
   if (!date) return '____.__.____';
   const [year, month, day] = date.split('-');
-  return `${day}.${month}.${year}`;
+  return `${day || '__'}.${month || '__'}.${year || '____'}`;
 }
 
-function formatCallTime(time) {
+function formatTime(time) {
   if (!time) return { hour: '____', minute: '____' };
   const [hour, minute] = time.split(':');
   return { hour: hour || '____', minute: minute || '____' };
@@ -18,9 +18,12 @@ function formatCallTime(time) {
 function Header({ copy }) {
   return <>
     <div className="print-org">
-      <div>Медицинская документация</div><div>Учетная форма № 114/у</div>
-      <div>Утверждена приказом Минздрава Российской Федерации</div>
-      <div>от 02 декабря 2009 г. № 942 &nbsp; Приложение № 4</div>
+      <div>Медицинская документация</div>
+      <div>Учетная форма № 114/у</div>
+      <div>Утверждена приказом Минздрава</div>
+      <div>Российской Федерации</div>
+      <div>от 02 декабря 2009 г. № 942</div>
+      <div>Приложение № 4</div>
     </div>
     <div className="print-title">СОПРОВОДИТЕЛЬНЫЙ ЛИСТ И ТАЛОН К НЕМУ</div>
     <div className="print-copy-title">{copy}. СОПРОВОДИТЕЛЬНЫЙ ЛИСТ № ______</div>
@@ -29,7 +32,7 @@ function Header({ copy }) {
 }
 
 function Patient({ form }) {
-  const birthDate = form.birthDate ? form.birthDate.split('-').reverse().join('.') : '____.__.____';
+  const birthDate = formatDate(form.birthDate);
   return <div className="print-patient">
     <Line><b>1. Фамилия</b> {value(form.surname)}</Line>
     <Line><b>2. Имя</b> {value(form.name)} <span className="date-inline">дата рождения «{birthDate}»</span></Line>
@@ -51,24 +54,72 @@ function Vitals({ form }) {
   </div>;
 }
 
+function CallAcceptedLine({ form }) {
+  const time = formatTime(form.callTime);
+  return <div className="call-accepted-line">
+    По вызову, принятому в «{time.hour}» час «{time.minute}» мин. «{formatDate(form.callDate)}»
+  </div>;
+}
+
+function DeliveryLine({ form }) {
+  const time = formatTime(form.deliveryTime);
+  return <div className="delivery-line">
+    «{time.hour}» час «{time.minute}» мин. «{formatDate(form.deliveryDate || form.callDate)}»
+  </div>;
+}
+
 function FirstCopy({ form }) {
-  const callTime = formatCallTime(form.callTime);
   return <section className="front-copy">
-    <Header copy="I" /><Vitals form={form} /><Patient form={form} />
-    <div className="print-block diagnosis-block"><b>9. Диагноз врача (фельдшера) бригады скорой медицинской помощи</b><div className="print-writing diagnosis-lines">{form.diagnosis}</div><div className="direction">Направление врача поликлиники, др. мед. организации (нужное подчеркнуть)</div></div>
-    <div className="print-block compact"><b>10. Доставлен в л/п стационара № ГБ № 1</b> {form.hospital || '________________'}<br/>По вызову, принятому в «{callTime.hour}» час «{callTime.minute}» мин. «{formatCallDate(form.callDate)}»<br/>«{form.deliveryTime || '____'}» час «____» мин. «____» 20___ г.</div>
-    <div className="print-block signature-row"><b>11. Врач (фельдшер)</b> {form.brigadeDoctor || '________________________'} <span>________________ (подпись)</span> <span>________________ (ф. и. о.)</span></div>
+    <Header copy="I" />
+    <Vitals form={form} />
+    <Patient form={form} />
+    <div className="print-block diagnosis-block">
+      <b>9. Диагноз врача (фельдшера) бригады скорой медицинской помощи</b>
+      <div className="print-writing diagnosis-lines">{form.diagnosis}</div>
+      <div className="direction">Направление врача поликлиники, др. мед. организации (нужное подчеркнуть)</div>
+    </div>
+    <div className="print-block delivery-block">
+      <b>10. Доставлен в л/п стационара № ГБ № 1</b> {form.hospital || '________________'}
+      <div className="organization-hint">(наименование медицинской организации)</div>
+      <CallAcceptedLine form={form} />
+      <DeliveryLine form={form} />
+    </div>
+    <div className="print-block signature-row">
+      <b>11. Врач (фельдшер)</b> {form.brigadeDoctor || '________________________'}
+      <span>________________ (подпись)</span>
+      <span>________________ (ф. и. о.)</span>
+    </div>
   </section>;
 }
 
 function SecondCopy({ form }) {
+  const time = formatTime(form.callTime);
   return <section className="front-copy">
-    <Header copy="II" /><Vitals form={form} /><Patient form={form} />
-    <div className="print-block diagnosis-block"><b>9. Обстоятельства заболевания / несчастного случая (указать)</b><div className="print-writing diagnosis-lines">{form.circumstances}</div><div className="time-line">«{form.callTime || '____'}» час «____» мин. «____» 20___ г.</div></div>
-    <div className="print-block"><b>10. Оказана медицинская помощь</b><div className="print-writing help-lines">{form.help}</div></div>
-    <div className="print-block compact"><b>11. Способ транспортировки:</b> {form.transport || 'на носилках, на руках, пешком (нужное подчеркнуть)'}</div>
-    <div className="print-block compact"><b>12. Доставлен в л/п стационара № ГБ № 1</b> {form.hospital || '________________'}<br/>«{form.deliveryTime || '____'}» час «____» мин. «____» 20___ г.</div>
-    <div className="print-block signature-row"><b>13. Врач (фельдшер)</b> {form.brigadeDoctor || '________________________'} <span>________________ (подпись)</span> <span>________________ (ф. и. о.)</span></div>
+    <Header copy="II" />
+    <Vitals form={form} />
+    <Patient form={form} />
+    <div className="print-block diagnosis-block circumstances-block">
+      <b>9. Обстоятельства заболевания / несчастного случая (указать)</b>
+      <div className="print-writing diagnosis-lines">{form.circumstances}</div>
+      <div className="time-line">«{time.hour}» час «{time.minute}» мин. «{formatDate(form.callDate)}»</div>
+    </div>
+    <div className="print-block help-block">
+      <b>10. Оказана медицинская помощь</b>
+      <div className="print-writing help-lines">{form.help}</div>
+    </div>
+    <div className="print-block transport-block">
+      <b>11. Способ транспортировки:</b> {form.transport || 'на носилках, на руках, пешком (нужное подчеркнуть)'}
+    </div>
+    <div className="print-block delivery-block second-delivery">
+      <b>12. Доставлен в л/п стационара № ГБ № 1</b> {form.hospital || '________________'}
+      <div className="organization-hint">(наименование медицинской организации)</div>
+      <DeliveryLine form={form} />
+    </div>
+    <div className="print-block signature-row">
+      <b>13. Врач (фельдшер)</b> {form.brigadeDoctor || '________________________'}
+      <span>________________ (подпись)</span>
+      <span>________________ (ф. и. о.)</span>
+    </div>
   </section>;
 }
 
@@ -80,7 +131,7 @@ export function BackSheet({ form }) {
   return <div className="print-page back-page">
     <div className="back-main">
       <div className="print-block back-item item-14"><b>14. Диагноз врача (фельдшера) скорой медицинской помощи, отделения (пункта) неотложной помощи, поликлиники (нужное подчеркнуть)</b><div className="print-writing back-lines">{form.diagnosis}</div></div>
-      <div className="print-block back-item item-15"><b>15. Диагноз врача приемного отделения</b><div className="print-writing back-lines"></div></div>
+      <div className="print-block back-item item-15"><b>15. Диагноз врача приемного отделения:</b><div className="print-writing back-lines"></div></div>
       <div className="print-block back-item item-16"><b>16. Заключительный клинический диагноз (патологоанатомическое заключение)</b><div className="print-writing back-lines"></div></div>
       <div className="back-grid-row"><div className="print-block compact"><b>17. Операция</b> «____» час «____» мин. «____» 20___ г.<br/>Наименование операции ________________________________</div><div className="print-block compact"><b>18. Провел в стационаре</b> ______ дней ______ час.</div></div>
       <div className="print-block compact"><b>19. Оказана помощь амбулаторно</b> ________________________________</div>
@@ -90,7 +141,7 @@ export function BackSheet({ form }) {
       <div className="print-sign">Заведующий отделением (врач отделения) ____________________________ (ф. и. о., подпись)</div>
     </div>
     <aside className="back-notes">
-      <p className="notes-intro"><b>В случае необходимости получения дополнительных сведений следует звонить на станцию (отделение) скорой медицинской помощи больному, связанные с транспортировкой и оказанием медицинской помощи.</b></p>
+      <p className="notes-intro"><b>В случае необходимости получения дополнительных сведений следует звонить на станцию (отделение) скорой медицинской помощи больному.</b><br/>Особенности, связанные с транспортировкой и оказанием медицинской помощи больному:</p>
       <div className="notes-label">Прочие замечания:</div><div className="print-writing notes-lines">{form.notes}</div>
       <div className="notes-label">Причины замечания:</div><div className="print-writing notes-lines"></div>
     </aside>
