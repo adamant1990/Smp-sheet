@@ -1,1 +1,27 @@
-@media print{.print-page{padding:4.5mm 5mm 4mm;font-size:7.2pt;line-height:1.02}.front-copy{padding:0 3mm}.print-org{font-size:5pt;line-height:1.02;margin-bottom:.55mm}.print-title{font-size:8.2pt;margin:.35mm 0}.print-copy-title{font-size:7.35pt}.print-copy-subtitle{font-size:6.45pt;margin-bottom:.55mm}.print-vitals{font-size:5.8pt;padding:.55mm 0;margin:.55mm 0}.print-line{min-height:5.1mm;padding:.55mm 0}.print-block{margin-top:1.05mm}.print-block.compact{margin-top:.75mm}.print-writing{margin-top:.3mm;background:repeating-linear-gradient(to bottom,transparent 0,transparent 3.8mm,#111 3.85mm,#111 3.92mm)}.diagnosis-lines{min-height:17mm}.help-lines{min-height:16mm}.direction,.time-line{font-size:5.15pt}.back-page{gap:3.5mm}.back-notes{padding-left:2.7mm}.back-item{margin-top:.8mm}.item-14 .back-lines{min-height:25mm}.item-15 .back-lines{min-height:14mm}.item-16 .back-lines{min-height:17mm}.item-22 .back-lines{min-height:23mm}.notes-intro{font-size:5.7pt;margin-bottom:3mm}.notes-label{font-size:6.4pt}.notes-lines{min-height:55mm}.print-sign{font-size:5.8pt}}
+@media print{
+  .print-page{padding:4.5mm 5mm 4mm;font-size:7.2pt;line-height:1.02}
+  .front-copy{padding:0 3mm}
+  .print-org{font-size:5pt;line-height:1.02;margin-bottom:.55mm}
+  .print-title{font-size:8.2pt;margin:.35mm 0}
+  .print-copy-title{font-size:7.35pt}
+  .print-copy-subtitle{font-size:6.45pt;margin-bottom:.55mm}
+  .print-vitals{font-size:5.8pt;padding:.55mm 0;margin:.55mm 0}
+  .print-line{min-height:5.1mm;padding:.55mm 0}
+  .print-block{margin-top:1.05mm}
+  .print-block.compact{margin-top:.75mm}
+  .print-writing{margin-top:.3mm;background:repeating-linear-gradient(to bottom,transparent 0,transparent 3.8mm,#111 3.85mm,#111 3.92mm)}
+  .diagnosis-lines{min-height:17mm}
+  .help-lines{min-height:16mm}
+  .direction,.time-line{font-size:5.15pt}
+  .back-page{gap:3.5mm}
+  .back-notes{padding:0 0 0 2.7mm;margin-top:105mm;height:101mm;align-self:start;display:block;overflow:hidden}
+  .back-item{margin-top:.8mm}
+  .item-14 .back-lines{min-height:25mm}
+  .item-15 .back-lines{min-height:14mm}
+  .item-16 .back-lines{min-height:17mm}
+  .item-22 .back-lines{min-height:23mm}
+  .notes-intro{font-size:5.7pt;line-height:1.12;margin:0 0 2.5mm}
+  .notes-label{font-size:6.4pt;margin:1.5mm 0 .7mm}
+  .notes-lines{min-height:27mm}
+  .print-sign{font-size:5.8pt}
+}
