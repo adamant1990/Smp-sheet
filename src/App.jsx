@@ -7,7 +7,7 @@ import DiagnosisPicker from './components/DiagnosisPicker';
 const todayISO = () => new Date().toISOString().slice(0, 10);
 
 const initialForm = {
-  surname: '', name: '', patronymic: '', birthDate: '', ageYears: '', ageMonths: '', sex: '', document: '', address: '', scene: '', diagnosis: '', circumstances: '', callDate: todayISO(), callTime: '', help: '', bloodPressure: '', temperature: '', glucose: '', lams: '', hospital: '', deliveryDate: todayISO(), deliveryTime: '', transport: '', stationDoctor: '', team: '', brigadeDoctor: '', notes: '',
+  surname: '', name: '', patronymic: '', birthDate: '', ageYears: '', ageMonths: '', sex: '', document: '', address: '', scene: '', sameAddress: false, diagnosis: '', circumstances: '', callDate: todayISO(), callTime: '', help: '', bloodPressure: '', temperature: '', glucose: '', lams: '', hospital: '', deliveryDate: todayISO(), deliveryTime: '', transport: '', stationDoctor: '', team: '', brigadeDoctor: '', notes: '',
 };
 
 function Field({ label, name, value, onChange, type = 'text', placeholder = '', wide = false, readOnly = false }) {
@@ -40,7 +40,18 @@ function calculateAge(birthDate) {
 export default function App() {
   const [form, setForm] = useState(initialForm);
   const hasStroke = useMemo(() => /инсульт|ОНМК|ишемическ|геморрагическ/i.test(form.diagnosis), [form.diagnosis]);
-  const update = (event) => { const { name, value } = event.target; setForm((prev) => ({ ...prev, [name]: value })); };
+  const update = (event) => {
+    const { name, value, type, checked } = event.target;
+    setForm((prev) => {
+      if (name === 'sameAddress') {
+        return { ...prev, sameAddress: checked, scene: checked ? prev.address : prev.scene };
+      }
+      if (name === 'address' && prev.sameAddress) {
+        return { ...prev, address: value, scene: value };
+      }
+      return { ...prev, [name]: type === 'checkbox' ? checked : value };
+    });
+  };
   const updateBirthDate = (value) => {
     const age = calculateAge(value);
     setForm((prev) => ({ ...prev, birthDate: value, ageYears: age.years === '' ? '' : String(age.years), ageMonths: age.months === '' ? '' : String(age.months) }));
@@ -59,7 +70,9 @@ export default function App() {
           <Field label="Фамилия" name="surname" value={form.surname} onChange={update}/><Field label="Имя" name="name" value={form.name} onChange={update}/><Field label="Отчество" name="patronymic" value={form.patronymic} onChange={update}/>
           <DateWheelPicker value={form.birthDate} onChange={updateBirthDate}/><Field label="Возраст, лет" name="ageYears" value={form.ageYears} onChange={update} type="number" readOnly/><Field label="Возраст, месяцев" name="ageMonths" value={form.ageMonths} onChange={update} type="number" readOnly/>
           <label className="field"><span>Пол</span><select name="sex" value={form.sex} onChange={update}><option value="">Не выбран</option><option>мужской</option><option>женский</option></select></label>
-          <Field label="Серия и номер документа" name="document" value={form.document} onChange={update} wide/><Field label="Место жительства" name="address" value={form.address} onChange={update} wide/><Field label="Место оказания СМП" name="scene" value={form.scene} onChange={update} wide/>
+          <Field label="Серия и номер документа" name="document" value={form.document} onChange={update} wide/><Field label="Место жительства" name="address" value={form.address} onChange={update} wide/>
+          <div className="field field-wide"><span>Место оказания СМП</span><input name="scene" type="text" value={form.scene} onChange={update} placeholder={form.sameAddress ? 'Совпадает с местом жительства' : ''} readOnly={form.sameAddress} /></div>
+          <label className="same-address"><input name="sameAddress" type="checkbox" checked={form.sameAddress} onChange={update} /> <span>Совпадает с местом жительства</span></label>
         </div></section>
         <section className="card"><div className="section-head"><span className="number">2</span><div><h2>Состояние и помощь</h2><p>Диагноз, обстоятельства, медицинская помощь и дополнительные показатели.</p></div></div>
           <div className="vitals"><Field label="АД, мм рт. ст." name="bloodPressure" value={form.bloodPressure} onChange={update} placeholder="120/80"/><Field label="Температура, °C" name="temperature" value={form.temperature} onChange={update} placeholder="36,6"/><Field label="Глюкоза, ммоль/л" name="glucose" value={form.glucose} onChange={update} placeholder="5,4"/><Field label="LAMS, баллы" name="lams" value={form.lams} onChange={update} type="number" placeholder="0–5"/></div>
