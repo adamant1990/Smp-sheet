@@ -7,7 +7,7 @@ import DiagnosisPicker from './components/DiagnosisPicker';
 const todayISO = () => new Date().toISOString().slice(0, 10);
 
 const initialForm = {
-  surname: '', name: '', patronymic: '', birthDate: '', ageYears: '', ageMonths: '', sex: '', document: '', address: '', scene: '', sameAddress: false, diagnosis: '', circumstances: '', callDate: todayISO(), callTime: '', help: '', bloodPressure: '', temperature: '', glucose: '', lams: '', hospital: '', deliveryDate: todayISO(), deliveryTime: '', transport: '', stationDoctor: '', team: '', brigadeDoctor: '', notes: '',
+  surname: '', name: '', patronymic: '', birthDate: '', ageYears: '', ageMonths: '', sex: '', document: '', address: '', scene: '', sameAddress: false, diagnosis: '', circumstances: '', callDate: todayISO(), callTime: '', help: '', bloodPressure: '', temperature: '', glucose: '', lams: '', saturation: '', hospital: '', deliveryDate: todayISO(), deliveryTime: '', transport: '', stationDoctor: '', team: '', brigadeDoctor: '', notes: '',
 };
 
 function Field({ label, name, value, onChange, type = 'text', placeholder = '', wide = false, readOnly = false }) {
@@ -37,6 +37,18 @@ function calculateAge(birthDate) {
   return { years, months };
 }
 
+function formatBloodPressure(value) {
+  const digits = value.replace(/\D/g, '').slice(0, 6);
+  if (digits.length <= 3) return digits;
+  return `${digits.slice(0, 3)}/${digits.slice(3)}`;
+}
+
+function formatTemperature(value) {
+  const digits = value.replace(/\D/g, '').slice(0, 3);
+  if (digits.length < 3) return digits;
+  return `${digits.slice(0, -1)},${digits.slice(-1)}`;
+}
+
 export default function App() {
   const [form, setForm] = useState(initialForm);
   const hasStroke = useMemo(() => /инсульт|ОНМК|ишемическ|геморрагическ/i.test(form.diagnosis), [form.diagnosis]);
@@ -49,6 +61,8 @@ export default function App() {
       if (name === 'address' && prev.sameAddress) {
         return { ...prev, address: value, scene: value };
       }
+      if (name === 'bloodPressure') return { ...prev, bloodPressure: formatBloodPressure(value) };
+      if (name === 'temperature') return { ...prev, temperature: formatTemperature(value) };
       return { ...prev, [name]: type === 'checkbox' ? checked : value };
     });
   };
@@ -75,8 +89,8 @@ export default function App() {
           <label className="same-address"><input name="sameAddress" type="checkbox" checked={form.sameAddress} onChange={update} /> <span>Совпадает с местом жительства</span></label>
         </div></section>
         <section className="card"><div className="section-head"><span className="number">2</span><div><h2>Состояние и помощь</h2><p>Диагноз, обстоятельства, медицинская помощь и дополнительные показатели.</p></div></div>
-          <div className="vitals"><Field label="АД, мм рт. ст." name="bloodPressure" value={form.bloodPressure} onChange={update} placeholder="120/80"/><Field label="Температура, °C" name="temperature" value={form.temperature} onChange={update} placeholder="36,6"/><Field label="Глюкоза, ммоль/л" name="glucose" value={form.glucose} onChange={update} placeholder="5,4"/><Field label="LAMS, баллы" name="lams" value={form.lams} onChange={update} type="number" placeholder="0–5"/></div>
-          {hasStroke && <div className="notice">Обнаружены признаки инсульта/ОНМК — перед печатью проверьте LAMS и глюкозу.</div>}
+          <div className="vitals"><Field label="АД, мм рт. ст." name="bloodPressure" value={form.bloodPressure} onChange={update} placeholder="12080"/><Field label="Температура, °C" name="temperature" value={form.temperature} onChange={update} placeholder="368"/><Field label="Глюкоза, ммоль/л" name="glucose" value={form.glucose} onChange={update} placeholder="5,4"/><Field label="Сатурация, %" name="saturation" value={form.saturation} onChange={update} type="number" placeholder="98"/><Field label="LAMS, баллы" name="lams" value={form.lams} onChange={update} type="number" placeholder="0–5"/></div>
+          {hasStroke && <div className="notice">Обнаружены признаки инсульта/ОНМК — перед печатью проверьте LAMS, глюкозу и сатурацию.</div>}
           <div className="grid two"><DiagnosisPicker value={form.diagnosis} onChange={update}/><TextField label="Обстоятельства заболевания / несчастного случая" name="circumstances" value={form.circumstances} onChange={update} rows={4}/><TextField label="Оказанная медицинская помощь" name="help" value={form.help} onChange={update} rows={5}/><Field label="Дата принятия вызова" name="callDate" value={form.callDate} onChange={update} type="date"/><Field label="Время принятия вызова" name="callTime" value={form.callTime} onChange={update} type="time"/></div>
         </section>
         <section className="card"><div className="section-head"><span className="number">3</span><div><h2>Доставка и передача</h2><p>Сведения о стационаре, транспортировке и бригаде.</p></div></div><div className="grid two"><Field label="Стационар / медицинская организация" name="hospital" value={form.hospital} onChange={update}/><Field label="Дата доставки" name="deliveryDate" value={form.deliveryDate} onChange={update} type="date"/><Field label="Время доставки" name="deliveryTime" value={form.deliveryTime} onChange={update} type="time"/><Field label="Способ транспортировки" name="transport" value={form.transport} onChange={update}/><Field label="Врач / фельдшер бригады" name="brigadeDoctor" value={form.brigadeDoctor} onChange={update}/><Field label="Фельдшер / врач принимающего отделения" name="stationDoctor" value={form.stationDoctor} onChange={update}/><Field label="Состав бригады" name="team" value={form.team} onChange={update}/></div><TextField label="Примечания" name="notes" value={form.notes} onChange={update} rows={4}/></section>
