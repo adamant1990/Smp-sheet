@@ -50,6 +50,7 @@ function Vitals({ form }) {
     <span><b>АД</b> {value(form.bloodPressure, '____/____')} мм рт. ст.</span>
     <span><b>Температура</b> {value(form.temperature, '____')} °C</span>
     <span><b>Глюкоза</b> {value(form.glucose, '____')} ммоль/л</span>
+    <span><b>Сатурация</b> {value(form.saturation, '____')} %</span>
     <span><b>LAMS</b> {value(form.lams, '____')} бал.</span>
   </div>;
 }
@@ -64,7 +65,7 @@ function CallAcceptedLine({ form }) {
 function DeliveryLine({ form }) {
   const time = formatTime(form.deliveryTime);
   return <div className="delivery-line">
-    «{time.hour}» час «{time.minute}» мин. «{formatDate(form.deliveryDate || form.callDate)}»
+    Доставлен в п/п стационара «{time.hour}» час «{time.minute}» мин. «{formatDate(form.deliveryDate || form.callDate)}»
   </div>;
 }
 
@@ -79,7 +80,7 @@ function FirstCopy({ form }) {
       <div className="direction">Направление врача поликлиники, др. мед. организации (нужное подчеркнуть)</div>
     </div>
     <div className="print-block delivery-block">
-      <b>10. Доставлен в л/п стационара № ГБ № 1</b> {form.hospital || '________________'}
+      <b>10. Доставлен в л/п стационара №</b> {form.hospital || '________________'}
       <div className="organization-hint">(наименование медицинской организации)</div>
       <CallAcceptedLine form={form} />
       <DeliveryLine form={form} />
@@ -93,7 +94,6 @@ function FirstCopy({ form }) {
 }
 
 function SecondCopy({ form }) {
-  const time = formatTime(form.callTime);
   return <section className="front-copy">
     <Header copy="II" />
     <Vitals form={form} />
@@ -101,7 +101,6 @@ function SecondCopy({ form }) {
     <div className="print-block diagnosis-block circumstances-block">
       <b>9. Обстоятельства заболевания / несчастного случая (указать)</b>
       <div className="print-writing diagnosis-lines">{form.circumstances}</div>
-      <div className="time-line">«{time.hour}» час «{time.minute}» мин. «{formatDate(form.callDate)}»</div>
     </div>
     <div className="print-block help-block">
       <b>10. Оказана медицинская помощь</b>
@@ -111,8 +110,9 @@ function SecondCopy({ form }) {
       <b>11. Способ транспортировки:</b> {form.transport || 'на носилках, на руках, пешком (нужное подчеркнуть)'}
     </div>
     <div className="print-block delivery-block second-delivery">
-      <b>12. Доставлен в л/п стационара № ГБ № 1</b> {form.hospital || '________________'}
+      <b>12. Доставлен в л/п стационара №</b> {form.hospital || '________________'}
       <div className="organization-hint">(наименование медицинской организации)</div>
+      <CallAcceptedLine form={form} />
       <DeliveryLine form={form} />
     </div>
     <div className="print-block signature-row">
