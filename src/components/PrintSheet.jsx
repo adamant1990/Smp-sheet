@@ -57,16 +57,17 @@ function Vitals({ form }) {
 
 function CallAcceptedLine({ form }) {
   const time = formatTime(form.callTime);
-  return <span>
+  return <div className="call-accepted-line">
     по вызову, принятому в «{time.hour}» час «{time.minute}» мин. «{formatDate(form.callDate)}»
-  </span>;
+  </div>;
 }
 
 function DeliveryLine({ form }) {
   const time = formatTime(form.deliveryTime);
-  return <span>
-    «{time.hour}» час «{time.minute}» мин. «{formatDate(form.deliveryDate || form.callDate)}», <CallAcceptedLine form={form} />
-  </span>;
+  return <div className="delivery-time-line">
+    «{time.hour}» час «{time.minute}» мин. «{formatDate(form.deliveryDate || form.callDate)}»
+    <CallAcceptedLine form={form} />
+  </div>;
 }
 
 function FirstCopy({ form }) {
@@ -82,7 +83,7 @@ function FirstCopy({ form }) {
     <div className="print-block delivery-block">
       <b>10. Доставлен в л/п стационара №</b> {form.hospital || '________________'}
       <div className="organization-hint">(наименование медицинской организации)</div>
-      <div><DeliveryLine form={form} /></div>
+      <DeliveryLine form={form} />
     </div>
     <div className="print-block signature-row">
       <b>11. Врач (фельдшер)</b> {form.brigadeDoctor || '________________________'}
@@ -111,7 +112,7 @@ function SecondCopy({ form }) {
     <div className="print-block delivery-block second-delivery">
       <b>12. Доставлен в л/п стационара №</b> {form.hospital || '________________'}
       <div className="organization-hint">(наименование медицинской организации)</div>
-      <div><DeliveryLine form={form} /></div>
+      <DeliveryLine form={form} />
     </div>
     <div className="print-block signature-row">
       <b>13. Врач (фельдшер)</b> {form.brigadeDoctor || '________________________'}
