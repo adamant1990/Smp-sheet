@@ -4,7 +4,8 @@ import PrintSheet from './components/PrintSheet';
 import DateWheelPicker from './components/DateWheelPicker';
 import DiagnosisPicker from './components/DiagnosisPicker';
 import DirectoryManager from './components/DirectoryManager';
-import { HelpAutocomplete, OrganizationPicker } from './components/DirectoryPicker';
+import HelpAutocomplete from './components/HelpAutocomplete';
+import { OrganizationPicker } from './components/DirectoryPicker';
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
 const initialForm = { surname: '', name: '', patronymic: '', birthDate: '', ageYears: '', ageMonths: '', sex: '', document: '', address: '', scene: '', sameAddress: false, diagnosis: '', circumstances: '', callDate: todayISO(), callTime: '', help: '', bloodPressure: '', temperature: '', glucose: '', lams: '', saturation: '', hospital: '', deliveryDate: todayISO(), deliveryTime: '', transport: '', stationDoctor: '', team: '', brigadeDoctor: '', notes: '' };
