@@ -50,23 +50,23 @@ function Vitals({ form }) {
     <span><b>АД</b> {value(form.bloodPressure, '____/____')} мм рт. ст.</span>
     <span><b>Температура</b> {value(form.temperature, '____')} °C</span>
     <span><b>Глюкоза</b> {value(form.glucose, '____')} ммоль/л</span>
-    <span><b>Сатурация</b> {value(form.saturation, '____')} %</span>
+    <span><b>SpO₂</b> {value(form.saturation, '____')} %</span>
     <span><b>LAMS</b> {value(form.lams, '____')} бал.</span>
   </div>;
 }
 
 function CallAcceptedLine({ form }) {
   const time = formatTime(form.callTime);
-  return <div className="call-accepted-line">
-    По вызову, принятому в «{time.hour}» час «{time.minute}» мин. «{formatDate(form.callDate)}»
-  </div>;
+  return <span>
+    по вызову, принятому в «{time.hour}» час «{time.minute}» мин. «{formatDate(form.callDate)}»
+  </span>;
 }
 
 function DeliveryLine({ form }) {
   const time = formatTime(form.deliveryTime);
-  return <div className="delivery-line">
-    Доставлен в п/п стационара «{time.hour}» час «{time.minute}» мин. «{formatDate(form.deliveryDate || form.callDate)}»
-  </div>;
+  return <span>
+    «{time.hour}» час «{time.minute}» мин. «{formatDate(form.deliveryDate || form.callDate)}», <CallAcceptedLine form={form} />
+  </span>;
 }
 
 function FirstCopy({ form }) {
@@ -82,8 +82,7 @@ function FirstCopy({ form }) {
     <div className="print-block delivery-block">
       <b>10. Доставлен в л/п стационара №</b> {form.hospital || '________________'}
       <div className="organization-hint">(наименование медицинской организации)</div>
-      <CallAcceptedLine form={form} />
-      <DeliveryLine form={form} />
+      <div><DeliveryLine form={form} /></div>
     </div>
     <div className="print-block signature-row">
       <b>11. Врач (фельдшер)</b> {form.brigadeDoctor || '________________________'}
@@ -112,8 +111,7 @@ function SecondCopy({ form }) {
     <div className="print-block delivery-block second-delivery">
       <b>12. Доставлен в л/п стационара №</b> {form.hospital || '________________'}
       <div className="organization-hint">(наименование медицинской организации)</div>
-      <CallAcceptedLine form={form} />
-      <DeliveryLine form={form} />
+      <div><DeliveryLine form={form} /></div>
     </div>
     <div className="print-block signature-row">
       <b>13. Врач (фельдшер)</b> {form.brigadeDoctor || '________________________'}
