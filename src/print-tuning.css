@@ -13,9 +13,9 @@
   .print-copy-title{font-size:11pt}
   .print-copy-subtitle{font-size:11pt}
 
-  /* Move the accompanying sheet and everything below its title down,
+  /* Move the accompanying sheet and everything below its title down by 8 mm,
      while keeping the ГБУЗ and medical-documentation blocks in place. */
-  .print-title{margin-top:4mm}
+  .print-title{margin-top:8mm}
 
   /* Vital-sign values stay compact so they remain inside the form fields */
   .print-vitals{font-size:5.8pt}
