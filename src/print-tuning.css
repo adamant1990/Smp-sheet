@@ -9,10 +9,12 @@
   .notes-intro{font-size:11pt;line-height:1.02}
   .notes-label{font-size:11pt;line-height:1.02}
 
-  /* Main header and vital signs — same 11 pt font */
+  /* Main header and vital-sign labels — 11 pt */
   .print-copy-title{font-size:11pt}
   .print-copy-subtitle{font-size:11pt}
-  .print-vitals{font-size:11pt}
+
+  /* Vital-sign values stay compact so they remain inside the form fields */
+  .print-vitals{font-size:5.8pt}
 
   /* Keep the truly compact elements unchanged */
   .direction,.time-line{font-size:5.15pt}
