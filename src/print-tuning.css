@@ -21,6 +21,10 @@
   .direction-inline{font-size:7pt}
   .organization-hint{font-size:7pt}
   .signature-row span{font-size:7pt}
+  .signature-row{position:relative}
+  .signature-row .role-selected{text-decoration:underline;text-underline-offset:1px}
+  .signature-row .signature-line{display:inline-block;width:35mm;border-bottom:1px solid currentColor;font-size:0;line-height:0;margin-left:5mm;vertical-align:baseline}
+  .signature-row .signature-caption{display:inline-block;width:35mm;text-align:center;margin-left:5mm;font-size:7pt;vertical-align:top}
 
   /* Place the organization name directly below the underline in both copies.
      The first copy is item 10; the second copy is item 12. */
