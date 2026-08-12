@@ -22,6 +22,11 @@
   .organization-hint{font-size:7pt}
   .signature-row span{font-size:7pt}
 
+  /* In item 12, place the organization name directly below the underline */
+  .second-delivery .hospital-entry{display:grid;grid-template-columns:auto 1fr;align-items:baseline;column-gap:1.5mm}
+  .second-delivery .hospital-value{min-width:0}
+  .second-delivery .organization-hint{grid-column:2;text-align:center;margin-top:-.2mm}
+
   /* Vital-sign values stay compact so they remain inside the form fields */
   .print-vitals{font-size:5.8pt}
 
