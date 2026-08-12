@@ -17,6 +17,11 @@
      while keeping the ГБУЗ and medical-documentation blocks in place. */
   .print-title{margin-top:8mm}
 
+  /* Smaller auxiliary labels in the form */
+  .direction-inline{font-size:7pt}
+  .organization-hint{font-size:7pt}
+  .signature-row span{font-size:7pt}
+
   /* Vital-sign values stay compact so they remain inside the form fields */
   .print-vitals{font-size:5.8pt}
 
