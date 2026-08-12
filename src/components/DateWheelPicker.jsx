@@ -1,89 +1,57 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
-const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
-const YEARS = Array.from({ length: new Date().getFullYear() - 1920 + 1 }, (_, i) => new Date().getFullYear() - i);
 const pad = (n) => String(n).padStart(2, '0');
 
-function daysInMonth(year, month) {
-  return new Date(year, month, 0).getDate();
-}
-
 function parseValue(value) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value || '')) return null;
-  const [year, month, day] = value.split('-').map(Number);
-  return { year, month, day };
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value || '')) return '';
+  const [year, month, day] = value.split('-');
+  return `${day}.${month}.${year}`;
 }
 
-function Wheel({ value, items, onChange, format = (item) => item }) {
-  const ref = useRef(null);
-  const timer = useRef(null);
-  const index = Math.max(0, items.indexOf(value));
+function formatInput(value) {
+  const digits = String(value || '').replace(/\D/g, '').slice(0, 8);
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 4) return `${digits.slice(0, 2)}.${digits.slice(2)}`;
+  return `${digits.slice(0, 2)}.${digits.slice(2, 4)}.${digits.slice(4)}`;
+}
 
-  useEffect(() => {
-    if (ref.current) ref.current.scrollTop = index * 40;
-  }, [index]);
-
-  const handleScroll = () => {
-    clearTimeout(timer.current);
-    timer.current = setTimeout(() => {
-      if (!ref.current) return;
-      const next = Math.max(0, Math.min(items.length - 1, Math.round(ref.current.scrollTop / 40)));
-      ref.current.scrollTo({ top: next * 40, behavior: 'smooth' });
-      onChange(items[next]);
-    }, 90);
-  };
-
-  return <div className="date-wheel-wrap">
-    <div className="date-wheel-highlight" />
-    <div className="date-wheel" ref={ref} onScroll={handleScroll}>
-      <div className="date-wheel-spacer" />
-      {items.map((item) => <button type="button" className={item === value ? 'date-wheel-item selected' : 'date-wheel-item'} key={String(item)} onClick={() => onChange(item)}>{format(item)}</button>)}
-      <div className="date-wheel-spacer" />
-    </div>
-  </div>;
+function toISO(displayValue) {
+  const digits = String(displayValue || '').replace(/\D/g, '');
+  if (digits.length !== 8) return '';
+  const day = Number(digits.slice(0, 2));
+  const month = Number(digits.slice(2, 4));
+  const year = Number(digits.slice(4, 8));
+  if (!year || month < 1 || month > 12 || day < 1 || day > new Date(year, month, 0).getDate()) return '';
+  return `${year}-${pad(month)}-${pad(day)}`;
 }
 
 export default function DateWheelPicker({ value, onChange }) {
-  const parsed = parseValue(value);
-  const today = new Date();
-  const initial = parsed || { year: today.getFullYear() - 30, month: today.getMonth() + 1, day: Math.min(today.getDate(), 28) };
-  const [draft, setDraft] = useState(initial);
-  const [open, setOpen] = useState(false);
+  const [displayValue, setDisplayValue] = useState(parseValue(value));
 
   useEffect(() => {
-    if (parsed) setDraft(parsed);
+    setDisplayValue(parseValue(value));
   }, [value]);
 
-  const days = useMemo(() => Array.from({ length: daysInMonth(draft.year, draft.month) }, (_, i) => i + 1), [draft.year, draft.month]);
-
-  const setPart = (part, next) => {
-    setDraft((prev) => {
-      const nextDraft = { ...prev, [part]: next };
-      nextDraft.day = Math.min(nextDraft.day, daysInMonth(nextDraft.year, nextDraft.month));
-      return nextDraft;
-    });
+  const handleChange = (event) => {
+    const next = formatInput(event.target.value);
+    setDisplayValue(next);
+    const iso = toISO(next);
+    if (iso) onChange(iso);
+    else if (next.replace(/\D/g, '').length === 0) onChange('');
   };
 
-  const apply = () => {
-    onChange(`${draft.year}-${pad(draft.month)}-${pad(draft.day)}`);
-    setOpen(false);
-  };
-
-  return <div className="date-picker-field">
+  return <label className="date-picker-field">
     <span>Дата рождения</span>
-    <button type="button" className={value ? 'date-display has-value' : 'date-display'} onClick={() => setOpen(true)}>
-      {value ? value.split('-').reverse().join('.') : 'Выберите дату'}
-    </button>
-    {open && <div className="date-picker-overlay" onMouseDown={() => setOpen(false)}>
-      <div className="date-picker-modal" onMouseDown={(e) => e.stopPropagation()}>
-        <div className="date-picker-head"><strong>Дата рождения</strong><button type="button" onClick={() => setOpen(false)}>×</button></div>
-        <div className="date-wheels">
-          <Wheel value={draft.day} items={days} onChange={(v) => setPart('day', v)} format={pad} />
-          <Wheel value={draft.month} items={Array.from({ length: 12 }, (_, i) => i + 1)} onChange={(v) => setPart('month', v)} format={(v) => MONTHS[v - 1]} />
-          <Wheel value={draft.year} items={YEARS} onChange={(v) => setPart('year', v)} />
-        </div>
-        <button type="button" className="date-picker-done" onClick={apply}>Готово</button>
-      </div>
-    </div>}
-  </div>;
+    <input
+      className={displayValue ? 'date-display has-value' : 'date-display'}
+      type="text"
+      inputMode="numeric"
+      pattern="[0-9.]*"
+      value={displayValue}
+      onChange={handleChange}
+      placeholder="ДД.ММ.ГГГГ"
+      maxLength={10}
+      autoComplete="bday"
+    />
+  </label>;
 }
