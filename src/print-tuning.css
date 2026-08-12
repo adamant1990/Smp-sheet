@@ -1,0 +1,15 @@
+@media print{
+  .print-page{font-size:11pt}
+  .print-writing{font-size:11pt}
+  .diagnosis-lines{font-size:11pt}
+  .help-lines{font-size:11pt}
+  .back-lines{font-size:11pt}
+
+  /* Keep the compact/small explanatory elements unchanged */
+  .print-vitals{font-size:5.8pt}
+  .print-copy-subtitle{font-size:6.45pt}
+  .direction,.time-line{font-size:5.15pt}
+  .print-sign{font-size:5.8pt}
+  .notes-intro{font-size:5.7pt}
+  .notes-label{font-size:6.4pt}
+}
