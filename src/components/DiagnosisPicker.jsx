@@ -71,6 +71,9 @@ function DiagnosisEntry({ value, index, onChange, onRemove, canRemove }) {
             setOpen(Boolean(event.target.value.trim()));
           }}
           onFocus={() => setOpen(Boolean(query.trim()))}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') event.preventDefault();
+          }}
           placeholder="Введите код МКБ-10 или название диагноза"
           autoComplete="off"
         />
