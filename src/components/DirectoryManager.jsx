@@ -19,6 +19,7 @@ export default function DirectoryManager({ open, onClose }) {
   const [session, setSession] = useState(null);
   const [drugName, setDrugName] = useState('');
   const [organizationName, setOrganizationName] = useState('');
+  const [password, setPassword] = useState('');
   const [editing, setEditing] = useState(null);
   const [editName, setEditName] = useState('');
   const [loading, setLoading] = useState(false);
@@ -61,20 +62,19 @@ export default function DirectoryManager({ open, onClose }) {
 
   if (!open) return null;
 
-  const sendLoginLink = async (event) => {
+  const signInAdmin = async (event) => {
     event.preventDefault();
+    if (!password) { setError('Введите пароль администратора.'); return; }
     setBusy(true);
     setNotice('');
     setError('');
     try {
-      const { error: authError } = await supabase.auth.signInWithOtp({
-        email: ADMIN_EMAIL,
-        options: { emailRedirectTo: window.location.origin, shouldCreateUser: true },
-      });
+      const { error: authError } = await supabase.auth.signInWithPassword({ email: ADMIN_EMAIL, password });
       if (authError) throw authError;
-      setNotice(`Ссылка для входа отправлена на ${ADMIN_EMAIL}. Откройте письмо на этом устройстве.`);
+      setPassword('');
+      setNotice('Вход выполнен.');
     } catch (err) {
-      setError(err.message || 'Не удалось отправить ссылку для входа.');
+      setError(err.message === 'Invalid login credentials' ? 'Неверный email или пароль.' : (err.message || 'Не удалось войти.'));
     } finally {
       setBusy(false);
     }
@@ -142,7 +142,7 @@ export default function DirectoryManager({ open, onClose }) {
       </div>
       <div className="directory-auth">
         {isAdmin ? <><span className="directory-admin-status">Вы вошли как администратор: {session.user.email}</span><button type="button" onClick={signOut} disabled={busy}>Выйти</button></> :
-          <><span>Просмотр доступен всем. Изменение справочников доступно только администратору.</span><button type="button" onClick={sendLoginLink} disabled={busy}>{busy ? 'Отправляем…' : 'Войти администратору'}</button></>}
+          <><span>Просмотр доступен всем. Для управления справочниками войдите как администратор.</span><form className="directory-login-form" onSubmit={signInAdmin}><label><span>Email администратора</span><input type="email" value={ADMIN_EMAIL} readOnly /></label><label><span>Пароль</span><input type="password" value={password} onChange={event => setPassword(event.target.value)} placeholder="Введите пароль" autoComplete="current-password" required /></label><button type="submit" disabled={busy}>{busy ? 'Входим…' : 'Войти'}</button></form></>}
       </div>
       {notice && <div className="directory-notice" role="status">{notice}</div>}
       {error && <div className="directory-error" role="alert">{error}</div>}
