@@ -1,48 +1,55 @@
 import { useEffect, useMemo, useState } from 'react';
-import { getDirectoryData, suggestDirections } from './DirectoryManager';
+import { supabase } from '../lib/supabase';
 
+const DEFAULT_DIRECTIONS = ['внутримышечно', 'внутривенно', 'подкожно', 'сублингвально'];
 const norm = value => String(value || '').toLowerCase().replace(/ё/g, 'е').trim();
+const suggestDirections = query => {
+  const q = norm(query);
+  return q ? DEFAULT_DIRECTIONS.filter(item => norm(item).includes(q)) : [];
+};
 
 export default function HelpAutocomplete({ value, onChange }) {
-  const [data, setData] = useState(getDirectoryData);
+  const [data, setData] = useState({ drugs: [] });
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
 
   useEffect(() => {
-    const refresh = () => setData(getDirectoryData());
+    let cancelled = false;
+    const refresh = async () => {
+      const { data: drugs, error } = await supabase.from('drugs').select('id,name').order('name');
+      if (!cancelled && !error) setData({ drugs: drugs || [] });
+    };
+    refresh();
     window.addEventListener('smp-directories-updated', refresh);
-    return () => window.removeEventListener('smp-directories-updated', refresh);
+    return () => {
+      cancelled = true;
+      window.removeEventListener('smp-directories-updated', refresh);
+    };
   }, []);
 
   const text = String(value || '');
   const currentToken = useMemo(() => {
-    const match = text.match(/(^|[\s,;])([^\s,;]*)$/);
+    const match = text.match(/(^|[\\s,;])([^\\s,;]*)$/);
     return match ? match[2] : '';
   }, [text]);
   const query = norm(currentToken);
   const directions = useMemo(() => suggestDirections(currentToken), [currentToken]);
   const drugs = useMemo(() => {
     if (!query || directions.length) return [];
-    return data.drugs.filter(item => {
-      const name = norm(item.name);
-      const dose = norm(item.dose);
-      return name.startsWith(query) || name.includes(query) || dose.includes(query);
-    }).slice(0, 8);
+    return data.drugs.filter(item => norm(item.name).includes(query)).slice(0, 8);
   }, [data, query, directions.length]);
   const results = directions.length
     ? directions.map(label => ({ type: 'route', label }))
-    : drugs.map(item => ({ type: 'drug', ...item, label: [item.name, item.dose].filter(Boolean).join(' — ') }));
+    : drugs.map(item => ({ type: 'drug', ...item, label: item.name }));
 
   const replaceCurrentToken = replacement => {
-    const match = text.match(/(^|[\s,;])([^\s,;]*)$/);
+    const match = text.match(/(^|[\\s,;])([^\\s,;]*)$/);
     if (!match) return `${text}${replacement}`;
     return `${text.slice(0, text.length - match[2].length)}${replacement}`;
   };
 
   const choose = item => {
-    const replacement = item.type === 'route'
-      ? `${item.label} `
-      : `${item.name}${item.dose ? ` — ${item.dose}` : ''} `;
+    const replacement = `${item.label} `;
     onChange(replaceCurrentToken(replacement));
     setOpen(false);
     setActive(0);
