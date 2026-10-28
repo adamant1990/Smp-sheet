@@ -44,7 +44,7 @@ export function OrganizationPicker({ value, onChange }) {
 }
 
 
-export function SettlementPicker({ name, value, onChange, label, readOnly = false, placeholder = 'Начните вводить населённый пункт' }) {
+export function SettlementPicker({ name, value, onChange, label, readOnly = false, wide = true, placeholder = 'Начните вводить населённый пункт' }) {
   const [query, setQuery] = useState(value || '');
   const [open, setOpen] = useState(false);
   const [settlements, setSettlements] = useState([]);
@@ -80,7 +80,7 @@ export function SettlementPicker({ name, value, onChange, label, readOnly = fals
     onChange({ target: { name, value: fullName } });
     setOpen(false);
   };
-  return <label className="field settlement-picker">
+  return <label className={wide ? "field field-wide settlement-picker" : "field settlement-picker"}>
     <span>{label}</span>
     <div className="quick-input-wrap">
       <input name={name} value={query} onChange={change} onFocus={() => !readOnly && setOpen(true)} onBlur={() => window.setTimeout(() => setOpen(false), 150)} placeholder={placeholder} autoComplete="off" readOnly={readOnly} />
