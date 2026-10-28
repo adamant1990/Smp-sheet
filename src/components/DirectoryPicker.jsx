@@ -43,6 +43,52 @@ export function OrganizationPicker({ value, onChange }) {
   return <label className="field organization-picker"><span>Стационар / медицинская организация</span><div className="quick-input-wrap"><input name="hospital" value={query} onChange={change} onFocus={() => setOpen(Boolean(query.trim()))} placeholder="Начните вводить название" autoComplete="off" /><div className="quick-results" style={{ display: open && results.length ? 'block' : 'none' }}>{results.map(item => <button key={item.id} type="button" onMouseDown={event => event.preventDefault()} onClick={() => choose(item)}>{item.name}</button>)}</div></div></label>;
 }
 
+
+export function SettlementPicker({ name, value, onChange, label, readOnly = false, placeholder = 'Начните вводить населённый пункт' }) {
+  const [query, setQuery] = useState(value || '');
+  const [open, setOpen] = useState(false);
+  const [settlements, setSettlements] = useState([]);
+  useEffect(() => {
+    let alive = true;
+    const refresh = async () => {
+      try {
+        const { data, error } = await supabase.from('settlements').select('id,settlement_type,name').order('name');
+        if (error) throw error;
+        if (alive) setSettlements(data || []);
+      } catch (error) {
+        console.error('Не удалось загрузить справочник населённых пунктов:', error);
+      }
+    };
+    refresh();
+    window.addEventListener('smp-directories-updated', refresh);
+    return () => { alive = false; window.removeEventListener('smp-directories-updated', refresh); };
+  }, []);
+  useEffect(() => { setQuery(value || ''); }, [value]);
+  const results = useMemo(() => {
+    const q = normalize(query.replace(/^(д\\.|г\\.|с\\.|п\\.|ст\\.|х\\.)\\s*/i, ''));
+    if (!q) return settlements.slice(0, 8);
+    return settlements.filter(item => normalize(item.name).includes(q) || normalize(item.settlement_type + ' ' + item.name).includes(normalize(query))).slice(0, 8);
+  }, [query, settlements]);
+  const change = event => {
+    setQuery(event.target.value);
+    onChange({ target: { name, value: event.target.value } });
+    setOpen(true);
+  };
+  const choose = item => {
+    const fullName = `${item.settlement_type} ${item.name}`;
+    setQuery(fullName);
+    onChange({ target: { name, value: fullName } });
+    setOpen(false);
+  };
+  return <label className="field settlement-picker">
+    <span>{label}</span>
+    <div className="quick-input-wrap">
+      <input name={name} value={query} onChange={change} onFocus={() => !readOnly && setOpen(true)} onBlur={() => window.setTimeout(() => setOpen(false), 150)} placeholder={placeholder} autoComplete="off" readOnly={readOnly} />
+      {open && !readOnly && results.length > 0 && <div className="quick-results">{results.map(item => <button key={item.id} type="button" onMouseDown={event => event.preventDefault()} onClick={() => choose(item)}><strong>{item.settlement_type} {item.name}</strong></button>)}</div>}
+    </div>
+  </label>;
+}
+
 export function RouteHint({ value, onChange }) {
   const [open, setOpen] = useState(false);
   const results = ['внутримышечно', 'внутривенно', 'подкожно', 'сублингвально'].filter(item => normalize(item).includes(normalize(value)));
