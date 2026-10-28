@@ -1,36 +1,160 @@
 import { useEffect, useState } from 'react';
+import { supabase, ADMIN_EMAIL } from '../lib/supabase';
 
-const STORAGE_KEY = 'smp-sheet-directories-v1';
-const DEFAULT_DIRECTIONS = ['внутримышечно', 'внутривенно', 'подкожно', 'сублингвально'];
+const EMPTY = { drugs: [], organizations: [] };
 
-const DEFAULT_DRUGS = [
-  ['Dopamini','Sol. Dopamini'],['Phenylephrini','Sol. Phenylephrini'],['Epinephrini','Sol. Epinephrini'],['Norepinephrini','Sol. Norepinephrini'],
-  ['Carbonis activati','Tab. Carbonis activati'],['Nitroglycerini','Tab. Nitroglycerini'],['Procainamidi','Sol. Procainamidi'],['Verapamili','Sol. Verapamili'],['Amiodaroni','Sol. Amiodaroni'],['Propranololi','Tab. Propranololi'],['Lidocaini','Sol. Lidocaini'],['Metoprololi','Sol. Metoprololi / Tab. Metoprololi'],
-  ['Diphenhydramini','Sol. Diphenhydramini'],['Chloropyramini','Sol. Chloropyramini'],['Calcii gluconatis','Sol. Calcii gluconatis'],['Povidoni iodi','Sol. Povidoni iodi'],['Hydrogenii peroxydi','Sol. Hydrogenii peroxydi'],['Kalii permanganatis','Sol. Kalii permanganatis'],['Atropini','Sol. Atropini'],
-  ['Salbutamoli','Aerosolum Salbutamoli'],['Budesonidi','Pulvis / suspensio Budesonidi'],['Aminophyllini','Sol. Aminophyllini'],['Acidi ascorbinici','Sol. Acidi ascorbinici'],['Pyridoxini','Sol. Pyridoxini'],['Thiamini','Sol. Thiamini'],
-  ['Clonidini','Sol. Clonidini'],['Nifedipini','Tab. Nifedipini'],['Captoprili','Tab. Captoprili'],['Insulini asparti','Sol. Insulini asparti'],['Hydrocortisoni','Lyophilisatum Hydrocortisoni'],['Dexamethasoni','Sol. Dexamethasoni'],['Oxytocini','Sol. Oxytocini'],['Prednisoloni','Sol. Prednisoloni'],
-  ['Dextranum','Sol. Dextranum'],['Hydroxyethylamylum','Sol. Hydroxyethylamylum'],['Natrii chloridi','Sol. Natrii chloridi'],['Dextrosi','Sol. Dextrosi'],['Natrii acetatis + Natrii chloridi + Kalii chloridi','Sol. Natrii acetatis + Natrii chloridi + Kalii chloridi'],['Solutio Natrii lactatis complexa','Sol. Natrii lactatis complexa'],['Kalii chloridi','Sol. Kalii chloridi'],['Natrii hydrocarbonatis','Sol. Natrii hydrocarbonatis'],
-  ['Procaini','Sol. Procaini'],['Suxamethonii chloridi et iodidi','Sol. Suxamethonii chloridi et iodidi'],['Pipecuronii bromidi','Lyophilisatum Pipecuronii bromidi'],['Furosemidi','Sol. Furosemidi'],['Morphini','Sol. Morphini'],['Trimeperidini','Sol. Trimeperidini'],['Fentanyli','Sol. Fentanyli'],['Tramadoli','Sol. Tramadoli'],
-  ['Ketorolaci','Sol. Ketorolaci'],['Paracetamoli','Sol. Paracetamoli'],['Ketoprofeni','Sol. Ketoprofeni'],['Chlorpromazini','Sol. Chlorpromazini'],['Droperidoli','Sol. Droperidoli'],['Midazolami','Sol. Midazolami'],['Naloxoni','Sol. Naloxoni'],['Natrii thiosulfatis','Sol. Natrii thiosulfatis'],['Protamini sulfatis','Sol. Protamine sulfatis'],['Diazepami','Sol. Diazepami'],['Digoxini','Sol. Digoxini'],['Drotaverini','Sol. Drotaverini'],['Magnesii sulfatis','Sol. Magnesii sulfatis'],['Platyphyllini','Sol. Platyphyllini'],['Coffeini','Sol. Coffeini'],['Ethanoli','Sol. Ethanoli'],
-  ['Acidi aminocapronici','Sol. Acidi aminocapronici'],['Acidi acetylsalicylici','Tab. Acidi acetylsalicylici'],['Heparini natrii','Sol. Heparini natrii'],['Clopidogreli','Tab. Clopidogreli'],['Etamsylati','Sol. Etamsylati'],['Dinitrogenii oxydi','Gas compressus'],['Ketamini','Sol. Ketamini'],['Propofoli','Emulsio Propofoli'],['Thiopentali natrii','Lyophilisatum Thiopentali natrii'],['Alteplasi','Lyophilisatum Alteplasi'],['Prourokinasi','Lyophilisatum Prourokinasi'],['Citicolini','Sol. Citicolini'],['Glycini','Tab. Glycini'],
-  ['Ethylmethylhydroxypyridini succinatis','Sol. Ethylmethylhydroxypyridini succinatis'],['Metoclopramidi','Sol. Metoclopramidi'],['Ondansetroni','Sol. Ondansetroni'],['Kalii et Magnesii asparaginatis','Sol. Kalii et Magnesii asparaginatis'],['Aquae pro injectionibus','Aqua pro injectionibus'],['Acidi succinici + Inosini + Nicotinamidi + Riboflavini mononucleotidi','Sol. composita'],['Chloramphenicoli','Tab. Chloramphenicoli'],['Streptomycini','Pulvis Streptomycini'],['Ciprofloxacini','Tab. Ciprofloxacini / Sol. Ciprofloxacini'],['Ceftriaxoni','Pulvis Ceftriaxoni'],['Amoxicillini','Tab. Amoxicillini'],['Methionyl-glutaminyl-histidyl-phenylalanyl-prolyl-glycyl-prolyl','Guttae nasales']
-].map(([name,dose], i) => ({ id: `default-${i}`, name, dose, route: '' }));
-
-function loadData() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    return { drugs: Array.isArray(saved?.drugs) && saved.drugs.length ? saved.drugs : DEFAULT_DRUGS, organizations: Array.isArray(saved?.organizations) ? saved.organizations : [] };
-  } catch { return { drugs: DEFAULT_DRUGS, organizations: [] }; }
+async function fetchDirectories() {
+  const [drugsResult, orgsResult] = await Promise.all([
+    supabase.from('drugs').select('id,name').order('name'),
+    supabase.from('medical_organizations').select('id,name').order('name'),
+  ]);
+  if (drugsResult.error) throw drugsResult.error;
+  if (orgsResult.error) throw orgsResult.error;
+  return { drugs: drugsResult.data || [], organizations: orgsResult.data || [] };
 }
-export function getDirectoryData() { return loadData(); }
-export function saveDirectoryData(data) { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); window.dispatchEvent(new Event('smp-directories-updated')); }
-export function suggestDirections(query) { const q=query.trim().toLowerCase().replace(/ё/g,'е'); if(!q) return []; return DEFAULT_DIRECTIONS.filter(x=>x.includes(q)); }
 
 export default function DirectoryManager({ open, onClose }) {
-  const [tab,setTab]=useState('drugs'); const [data,setData]=useState(loadData); const [drug,setDrug]=useState({name:'',dose:'',route:''}); const [organization,setOrganization]=useState('');
-  useEffect(()=>{ if(open) setData(loadData()); },[open]); if(!open) return null;
-  const persist=next=>{setData(next);saveDirectoryData(next);};
-  const addDrug=e=>{e.preventDefault();if(!drug.name.trim())return;persist({...data,drugs:[...data.drugs,{id:Date.now(),...drug,name:drug.name.trim(),dose:drug.dose.trim(),route:drug.route.trim()}]});setDrug({name:'',dose:'',route:''});};
-  const addOrganization=e=>{e.preventDefault();if(!organization.trim())return;persist({...data,organizations:[...data.organizations,{id:Date.now(),name:organization.trim()}]});setOrganization('');};
-  return <div className="directory-overlay" onMouseDown={onClose}><div className="directory-modal" onMouseDown={e=>e.stopPropagation()}><div className="directory-head"><div><h2>Справочники</h2><p>Лекарства и медицинские организации сохраняются на этом устройстве.</p></div><button type="button" onClick={onClose}>×</button></div><div className="directory-tabs"><button className={tab==='drugs'?'active':''} onClick={()=>setTab('drugs')}>💊 Лекарства</button><button className={tab==='organizations'?'active':''} onClick={()=>setTab('organizations')}>🏥 Медорганизации</button></div>{tab==='drugs'?<><form className="directory-form" onSubmit={addDrug}><label><span>Название на латыни</span><input value={drug.name} onChange={e=>setDrug({...drug,name:e.target.value})} placeholder="Sol. Metamizoli"/></label><label><span>Дозировка / форма</span><input value={drug.dose} onChange={e=>setDrug({...drug,dose:e.target.value})} placeholder="1% — 1,0"/></label><label><span>Путь введения</span><input list="route-suggestions" value={drug.route} onChange={e=>setDrug({...drug,route:e.target.value})} placeholder="Начните писать: подк..."/><datalist id="route-suggestions">{DEFAULT_DIRECTIONS.map(x=><option key={x} value={x}/>)}</datalist></label><button className="directory-add" type="submit">Добавить препарат</button></form><div className="directory-list">{data.drugs.map(item=><div className="directory-item" key={item.id}><div><strong>{item.name}</strong><span>{item.dose}{item.dose&&item.route?' · ':''}{item.route}</span></div>{!String(item.id).startsWith('default-')&&<button type="button" onClick={()=>persist({...data,drugs:data.drugs.filter(x=>x.id!==item.id)})}>Удалить</button>}</div>)}</div></>:<><form className="directory-form organization-form" onSubmit={addOrganization}><label><span>Название медицинской организации</span><input value={organization} onChange={e=>setOrganization(e.target.value)} placeholder="ГБУЗ РБ Туймазинская ЦРБ"/></label><button className="directory-add" type="submit">Добавить организацию</button></form><div className="directory-list">{data.organizations.map(item=><div className="directory-item" key={item.id}><strong>{item.name}</strong><button type="button" onClick={()=>persist({...data,organizations:data.organizations.filter(x=>x.id!==item.id)})}>Удалить</button></div>)}</div></>}</div></div>;
+  const [tab, setTab] = useState('drugs');
+  const [data, setData] = useState(EMPTY);
+  const [session, setSession] = useState(null);
+  const [drugName, setDrugName] = useState('');
+  const [organizationName, setOrganizationName] = useState('');
+  const [editing, setEditing] = useState(null);
+  const [editName, setEditName] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [notice, setNotice] = useState('');
+  const [error, setError] = useState('');
+
+  const isAdmin = session?.user?.email?.toLowerCase() === ADMIN_EMAIL;
+
+  const refresh = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      setData(await fetchDirectories());
+    } catch (err) {
+      setError(err.message || 'Не удалось загрузить справочники.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => setSession(currentSession));
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      setSession(nextSession);
+      window.dispatchEvent(new Event('smp-directories-updated'));
+    });
+    return () => listener.subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (open) refresh();
+  }, [open]);
+
+  useEffect(() => {
+    const refreshOnChange = () => { if (open) refresh(); };
+    window.addEventListener('smp-directories-updated', refreshOnChange);
+    return () => window.removeEventListener('smp-directories-updated', refreshOnChange);
+  }, [open]);
+
+  if (!open) return null;
+
+  const sendLoginLink = async (event) => {
+    event.preventDefault();
+    setBusy(true);
+    setNotice('');
+    setError('');
+    try {
+      const { error: authError } = await supabase.auth.signInWithOtp({
+        email: ADMIN_EMAIL,
+        options: { emailRedirectTo: window.location.origin, shouldCreateUser: true },
+      });
+      if (authError) throw authError;
+      setNotice(`Ссылка для входа отправлена на ${ADMIN_EMAIL}. Откройте письмо на этом устройстве.`);
+    } catch (err) {
+      setError(err.message || 'Не удалось отправить ссылку для входа.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const signOut = async () => {
+    setBusy(true);
+    const { error: authError } = await supabase.auth.signOut();
+    setBusy(false);
+    if (authError) setError(authError.message);
+    else { setNotice('Вы вышли из режима администратора.'); setEditing(null); }
+  };
+
+  const saveRecord = async (event, type) => {
+    event.preventDefault();
+    const isDrug = type === 'drugs';
+    const name = (isDrug ? drugName : organizationName).trim();
+    if (!name) return;
+    setBusy(true);
+    setError('');
+    setNotice('');
+    const { error: saveError } = await supabase.from(type).insert({ name });
+    setBusy(false);
+    if (saveError) { setError(saveError.code === '23505' ? 'Такая запись уже существует.' : saveError.message); return; }
+    if (isDrug) setDrugName(''); else setOrganizationName('');
+    setNotice('Запись добавлена в общий справочник.');
+    await refresh();
+    window.dispatchEvent(new Event('smp-directories-updated'));
+  };
+
+  const saveEdit = async (event, type) => {
+    event.preventDefault();
+    if (!editing || !editName.trim()) return;
+    setBusy(true);
+    setError('');
+    const { error: saveError } = await supabase.from(type).update({ name: editName.trim(), updated_at: new Date().toISOString() }).eq('id', editing.id);
+    setBusy(false);
+    if (saveError) { setError(saveError.code === '23505' ? 'Такая запись уже существует.' : saveError.message); return; }
+    setEditing(null);
+    setNotice('Изменения сохранены.');
+    await refresh();
+    window.dispatchEvent(new Event('smp-directories-updated'));
+  };
+
+  const deleteRecord = async (type, item) => {
+    if (!window.confirm(`Удалить запись «${item.name}» из общего справочника?`)) return;
+    setBusy(true);
+    setError('');
+    const { error: deleteError } = await supabase.from(type).delete().eq('id', item.id);
+    setBusy(false);
+    if (deleteError) { setError(deleteError.message); return; }
+    setNotice('Запись удалена.');
+    await refresh();
+    window.dispatchEvent(new Event('smp-directories-updated'));
+  };
+
+  const items = tab === 'drugs' ? data.drugs : data.organizations;
+  const tableName = tab === 'drugs' ? 'drugs' : 'medical_organizations';
+
+  return <div className="directory-overlay" onMouseDown={onClose}>
+    <div className="directory-modal" onMouseDown={event => event.stopPropagation()}>
+      <div className="directory-head">
+        <div><h2>Общие справочники</h2><p>Записи хранятся в общей базе Supabase и доступны на всех устройствах.</p></div>
+        <button type="button" onClick={onClose} aria-label="Закрыть">×</button>
+      </div>
+      <div className="directory-auth">
+        {isAdmin ? <><span className="directory-admin-status">Вы вошли как администратор: {session.user.email}</span><button type="button" onClick={signOut} disabled={busy}>Выйти</button></> :
+          <><span>Просмотр доступен всем. Изменение справочников доступно только администратору.</span><button type="button" onClick={sendLoginLink} disabled={busy}>{busy ? 'Отправляем…' : 'Войти администратору'}</button></>}
+      </div>
+      {notice && <div className="directory-notice" role="status">{notice}</div>}
+      {error && <div className="directory-error" role="alert">{error}</div>}
+      <div className="directory-tabs"><button className={tab === 'drugs' ? 'active' : ''} onClick={() => { setTab('drugs'); setEditing(null); }}>💊 Лекарства ({data.drugs.length})</button><button className={tab === 'organizations' ? 'active' : ''} onClick={() => { setTab('organizations'); setEditing(null); }}>🏥 Медорганизации ({data.organizations.length})</button></div>
+      {isAdmin && (tab === 'drugs' ? <form className="directory-form directory-form-single" onSubmit={event => saveRecord(event, 'drugs')}><label><span>Полное название препарата</span><input value={drugName} onChange={event => setDrugName(event.target.value)} placeholder="Sol. Magnesii Sulfatis 25% - 5,0" required /></label><button className="directory-add" type="submit" disabled={busy}>Добавить</button></form> :
+        <form className="directory-form organization-form" onSubmit={event => saveRecord(event, 'medical_organizations')}><label><span>Полное название медицинской организации</span><input value={organizationName} onChange={event => setOrganizationName(event.target.value)} placeholder="ГБУЗ Туймазинская ЦРБ" required /></label><button className="directory-add" type="submit" disabled={busy}>Добавить</button></form>)}
+      <div className="directory-list">
+        {loading ? <div className="directory-empty">Загружаем общий справочник…</div> : items.length === 0 ? <div className="directory-empty">Записей пока нет.</div> : items.map(item => <div className="directory-item" key={item.id}>
+          {isAdmin && editing?.id === item.id ? <form className="directory-edit-form" onSubmit={event => saveEdit(event, tableName)}><input value={editName} onChange={event => setEditName(event.target.value)} autoFocus required /><button type="submit" disabled={busy}>Сохранить</button><button type="button" onClick={() => setEditing(null)}>Отмена</button></form> :
+            <><strong>{item.name}</strong>{isAdmin && <div className="directory-item-actions"><button type="button" onClick={() => { setEditing(item); setEditName(item.name); }}>Изменить</button><button type="button" onClick={() => deleteRecord(tableName, item)} disabled={busy}>Удалить</button></div>}</>}
+        </div>)}
+      </div>
+    </div>
+  </div>;
 }
