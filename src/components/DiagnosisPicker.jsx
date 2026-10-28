@@ -69,7 +69,7 @@ export default function DiagnosisPicker({ value, onChange }) {
           rows={4}
           value={query}
           onChange={handleChange}
-          onFocus={() => setOpen(Boolean(query.trim())}
+          onFocus={() => setOpen(Boolean(query.trim()))}
           placeholder="Введите код МКБ-10 или название диагноза"
           autoComplete="off"
         />
