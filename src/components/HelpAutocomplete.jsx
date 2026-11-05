@@ -55,7 +55,7 @@ const DRUG_ALIASES = {
   'procaini': ['прокаин', 'новокаин'],
   'suxamethonii chloridi et iodidi': ['суксаметоний', 'листенон'],
   'pipecuronii bromidi': ['пипекуроний'],
-  'ethylmethylhydroxypyridini succinatis': ['этилметилгидроксипиридина сукцинат', 'мексидол'],
+  'ethylmethylhydroxypyridini': ['этилметилгидроксипиридина сукцинат', 'этилметилгидроксипиридин', 'мексидол'],
   'acidi aminocapronici': ['аминокапроновая кислота'],
   'natrii thiosulfatis': ['тиосульфат натрия', 'натрия тиосульфат'],
   'prot amini sulfatis': ['протамина сульфат', 'протамин'],
