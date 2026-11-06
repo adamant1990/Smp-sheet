@@ -54,3 +54,6 @@
 .diagnosis-remove{border:0;background:transparent;color:#a33f3f;font-size:12px;padding:4px 2px}
 .diagnosis-hint{color:#71808a;font-size:11px;line-height:1.45}
 @media(max-width:760px){.diagnosis-entry{padding:9px}.diagnosis-add{width:100%}}
+
+/* Patient-vitals panel also appears in the generated PDF export. */
+.print-vitals-panel{position:absolute;left:3mm;bottom:2mm;width:70mm;padding:1.4mm 2mm 1.6mm;border:.6pt solid #111;background:#fff;color:#111;font-size:7.2pt;line-height:1.2}.print-vitals-title{margin-bottom:1mm;font-size:7pt;font-weight:700;letter-spacing:.02em}.print-vitals-grid{display:grid;grid-template-columns:1fr 1fr;column-gap:2mm;row-gap:.7mm}.print-vitals-grid span{white-space:nowrap}
